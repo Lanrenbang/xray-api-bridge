@@ -1,0 +1,62 @@
+# 容器主配置
+# - 当容器被前置 caddy 引用时直接加载本配置
+# - 当容器独立使用时，volumes、network_mode、depends_on 将被 compose.override.yaml 自动覆盖
+
+# 关于机密：
+# 顶层的 secrets 是声明本配置可以使用哪些机密，但具体服务里必须再使用 secrets 字段授权要使用的机密
+# - .env.warp 定义了变量替换能用到的全部机密，但根据服务的角色不同（服务端/客户端等），未必要全部在 docker/podman 事先创建好；
+# - 顶层 secrets 里声明的机密，“必须” 先创建好；
+# - 服务 secrets 可以比顶层少（多服务），但不能使用顶层未声明的机密
+
+services:
+  xray-api: 
+    image: lanrenbang/xray-api-bridge:latest
+    container_name: xray-api
+    restart: unless-stopped
+    environment:  # 时区设置
+      - TZ=America/Los_Angeles
+    env_file: 
+      - ${BRIDGE_PROJECT_DIR:-.}/.env.warp
+    secrets:
+      - xray_api_bridge_subs_superKey
+      - xray_servername_raw
+      - xray_servername_xhttp
+      - xray_servername_cdn
+      - xray_reality_password
+      - xray_vless_encryption_raw
+      - xray_vless_encryption_xhttp
+
+    volumes:
+      - shared_socket_path:/dev/shm  # 共享内存盘，套接字由子服务创建，caddy 反代
+      - ${BRIDGE_PROJECT_DIR:-.}/templates:/usr/local/etc/templates:ro # 订阅配置模板
+      
+      - ${BRIDGE_PROJECT_DIR:-.}/.env.warp:/usr/local/etc/.env.warp:ro
+      - ${XRAY_PROJECT_DIR:?xray required}/.env.warp:/usr/local/etc/.env.xray:ro
+    # command 和上面的 .env.warp 挂载构成环境变量替换，且不会传递到主进程
+    # 如果你不介意将替换环境变量传递给主进程，则使用 env_file 加载并注释掉 command 会更方便
+    # 多次调用 -e 时后加载的变量将覆盖前面的
+    command: ["-e", "/usr/local/etc/.env.xray", "-e", "/usr/local/etc/.env.warp"]
+
+    network_mode: "service:caddy"  # 共享 caddy 网络栈
+    depends_on:
+      - caddy
+      - xray
+
+# 此处声明允许加载机密
+# 如果不使用订阅分享功能，那么此处和上面的机密可全部删除
+secrets:
+  xray_api_bridge_subs_superKey:
+    external: true
+  xray_servername_raw:
+    external: true
+  xray_servername_xhttp:
+    external: true
+  xray_servername_cdn:
+    external: true
+  xray_reality_password:
+    external: true
+  xray_vless_encryption_raw:
+    external: true
+  xray_vless_encryption_xhttp:
+    external: true
+

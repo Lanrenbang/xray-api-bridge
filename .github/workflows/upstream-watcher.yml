@@ -1,0 +1,28 @@
+name: '🤖 Upstream Watcher'
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+
+      - name: 'Run upstream checker'
+        uses: Lanrenbang/template-repo/.github/actions/upstream-checker@a7705a98d53406c769364bea48f4435e7b054bad  # v2.0.0
+        with:
+          repositories: |
+            [
+              {"repo": "Lanrenbang/envwarp"},
+              {"repo": "caddyserver/caddy"},
+              {"repo": "mholt/caddy-l4", "check_type": "commit"},
+              {"repo": "caddy-dns/cloudflare", "check_type": "commit"},
+              {"repo": "WeidiDeng/caddy-cloudflare-ip", "check_type": "commit"},
+              {"repo": "ggicci/caddy-jwt", "check_type": "commit"}
+            ]
+          state_file: '.github/upstream-versions.txt'
+          token: ${{ secrets.BOT_PAT }}

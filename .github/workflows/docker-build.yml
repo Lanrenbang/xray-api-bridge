@@ -1,0 +1,125 @@
+name: '📦 Docker Build and Push'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - '.github/workflows/docker-build.yml'
+      # - upstream.*
+
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Manual image tag to build and push'
+        required: true
+
+permissions: read-all
+
+jobs:
+  build-and-push:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    env:
+      GHCR_IMAGE: ghcr.io/${{ github.repository }}
+      DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        # 对于 release 事件，获取与 tag 关联的 commit
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.target_commitish || github.ref }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        if: false  # 交叉编译时不需要仿真
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130  # v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@318604b99e75e41977312d83839a89be02ca4893  # v5.9.0
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: index
+        with:
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
+          flavor: |
+            latest=false
+          tags: |
+            type=sha,format=long,enable=${{ github.event_name == 'push' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' || github.event_name == 'release' }}
+            type=semver,pattern={{version}},enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ inputs.image_tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
+
+      - name: Build and push image (on push or manual trigger)
+        # 仅在非 release 事件时运行
+        if: github.event_name != 'release'
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          # file: ./Dockerfile
+          platforms: |
+            linux/amd64
+            linux/arm/v6
+            linux/arm/v7
+            linux/arm64/v8
+          push: true
+          provenance: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Re-tag for Release
+        if: github.event_name == 'release'
+        run: |
+          GHCR_LOWER="${GHCR_IMAGE,,}"
+          DOCKERHUB_LOWER="${DOCKERHUB_IMAGE,,}"
+          
+          # 直接使用 GHCR 的 latest
+          SOURCE_IMAGE="$GHCR_LOWER:latest"
+          
+          echo "Source Image found: $SOURCE_IMAGE"
+          echo "Target Tags: ${{ github.event.release.tag_name }}"
+
+          # 执行跨仓库/跨标签同步
+          docker buildx imagetools create \
+            "$SOURCE_IMAGE" \
+            --tag "$GHCR_LOWER:${{ github.event.release.tag_name }}" \
+            --tag "$DOCKERHUB_LOWER:${{ github.event.release.tag_name }}" \
+            --tag "$DOCKERHUB_LOWER:latest"
+
+          echo "Successfully promoted $SOURCE_IMAGE to release ${{ github.event.release.tag_name }}"
+
+      - name: Docker Hub Description
+        if: github.event_name != 'release'
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # V5.0.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKERHUB_IMAGE }}
+          short-description: ${{ github.event.repository.description }}
+

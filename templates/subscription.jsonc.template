@@ -1,0 +1,133 @@
+/*
+* ---- API 桥接服务订阅端点配置 ----
+* 你必须安装 `xray-services` 项目并且配置好其环境变量才可，因为本配置借用其变量
+* 当然你可以根据 `xray-services` 项目的变量注释将借用部分单独移入本项目环境变量配置；
+* 但是你依旧需要定义 Xray gRPC API 开放地址才能使用各个 RESTful 端点，也就是脱离 Xray 本项目是没有意义的。
+
+* 此处的配置与 `xray-services` 项目提供的客户端模板出站部分完全一致，也就是实现了五合一出站分享，你可以根据需求自行调整。
+*/
+
+[
+  {
+    "level": -1,                                              // 本条分享仅为服务端入站用户配置中相匹配 level 的用户生成，如果 -1 则忽略校验直接生成；
+    "address": "${XRAY_OUTBOUND_ADDRESS_RAW}",                // 必须，服务端地址，IP 或域名；省略 serverName 字段时必须为域名；
+    "port": ${XRAY_OUTBOUND_PORT},                            // 必须，服务端端口；
+    "protocol": "vless",                                      // 必须，订阅协议，仅支持 vless/vmess；
+    "network": "raw",                                         // 必须，底层网络协议，protocol+network 组合决定了订阅信息从服务端哪条入站获取；
+    "security": "reality",                                    // 必须，加密协议，tls/reality；
+    "description": "",                                        // 可选，订阅描述文本，不提供默认生成为 `protocol_network_security`；
+    "encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_RAW}",     // 可选，留空则为 none(vless)/auto(vmess)，否则可为 vless 加密密钥/vmess 加密算法；
+    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",            // 可选，客户端指纹，默认 chrome
+    "serverName": "",                                         // 可选，服务端 SNI，reality `偷别人` 的域名，空则取 address（必须为域名）
+    "flow": "xtls-rprx-vision",                               // 可选，留空则以服务端定义为准
+    "password": "${XARY_REALITY_PASSWORD}",                   // security=reality 时必须，否则忽略
+    "mldsa65Verify": "",                                      // security=reality 时可选启用 REALITY ML-DSA-65 签名，否则忽略
+    "alpn": ["h2", "http/1.1"],                               // security=tls 时可选，否则忽略
+    "echConfigList": "",                                      // security=tls 时可选，否则忽略
+    "host": "${XRAY_OUTBOUND_ADDRESS_RAW}",                   // network=http|xhttp|ws|httpupgrade 时可选，空则取 address，否则忽略
+    "mode": "auto",                                           // network=xhttp|grpc 时可选，留空则为 auto(xhttp)/gun(grpc)，否则忽略
+    "extra": {},                                              // network=xhttp 可选，否则忽略
+    "path": ""                                                // network=http|ws|httpupgrade 时可选，指定请求路径，xhttp 时自动从服务端获取，否则忽略
+  },
+
+	{
+		"level": -1,
+		"address": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+		"port": ${XRAY_OUTBOUND_PORT},
+		"protocol": "vless",
+		"network": "xhttp",
+		"security": "reality",
+		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
+		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"password": "${XARY_REALITY_PASSWORD}",
+		"host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}"
+	},
+	
+	{
+		"level": -1,
+		"address": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+		"port": ${XRAY_OUTBOUND_PORT},
+		"protocol": "vless",
+		"network": "xhttp",
+		"security": "tls",
+		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
+		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"alpn": ["h2"],
+		"host": "${XRAY_OUTBOUND_ADDRESS_CDN}"
+	},
+	
+	{
+		"level": -1,
+		"address": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+		"port": ${XRAY_OUTBOUND_PORT},
+		"protocol": "vless",
+		"network": "xhttp",
+		"security": "tls",
+		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
+		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"alpn": ["h2"],
+		"host": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+		"extra": {
+		  "downloadSettings": {
+			  "address": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+			  "port": ${XRAY_OUTBOUND_PORT},
+			  "network": "xhttp",
+			  "security": "reality",
+			  "realitySettings": {
+			    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+			    "serverName": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+			    "password": "${XARY_REALITY_PASSWORD}"
+			  },
+			  "xhttpSettings": {
+			    "host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+			    "path": "${XRAY_XHTTP_PATH}",
+			    "mode": "auto"
+			  },
+			  
+			  "sockopt": {
+			    "tcpFastOpen": true,
+			    "tcpcongestion": "bbr",
+			    "tcpMptcp": true
+			  }
+		  }
+		}
+	},
+	
+	{
+		"level": -1,
+		"address": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+		"port": ${XRAY_OUTBOUND_PORT},
+		"protocol": "vless",
+		"network": "xhttp",
+		"security": "reality",
+		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
+		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"password": "${XARY_REALITY_PASSWORD}",
+		"host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
+		"extra": {
+		  "downloadSettings": {
+			  "address": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+			  "port": ${XRAY_OUTBOUND_PORT},
+			  "network": "xhttp",
+			  "security": "tls",
+			  "tlsSettings": {
+			    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+			    "serverName": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+			    "alpn": [
+				  "h2"
+			    ]
+			  },
+			  "xhttpSettings": {
+			    "host": "${XRAY_OUTBOUND_ADDRESS_CDN}",
+			    "path": "${XRAY_XHTTP_PATH}",
+			    "mode": "auto"
+			  },
+			  "sockopt": {
+			    "tcpFastOpen": true,
+			    "tcpcongestion": "bbr",
+			    "tcpMptcp": true
+			  }
+		  }
+		}
+	}
+]

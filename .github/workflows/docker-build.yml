@@ -7,7 +7,6 @@ on:
     paths:
       - 'Dockerfile'
       - '.github/workflows/docker-build.yml'
-      # - upstream.*
 
   release:
     types: [published]
@@ -31,7 +30,7 @@ jobs:
       DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
     steps:
       - name: 'Checkout repository'
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
         # 对于 release 事件，获取与 tag 关联的 commit
         with:
           ref: ${{ github.event_name == 'release' && github.event.release.target_commitish || github.ref }}
@@ -93,6 +92,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Docker Hub Description
+        if: github.event_name != 'release'
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # V5.0.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.DOCKERHUB_IMAGE }}
+          short-description: ${{ github.event.repository.description }}
+
       - name: Re-tag for Release
         if: github.event_name == 'release'
         run: |
@@ -113,13 +121,4 @@ jobs:
             --tag "$DOCKERHUB_LOWER:latest"
 
           echo "Successfully promoted $SOURCE_IMAGE to release ${{ github.event.release.tag_name }}"
-
-      - name: Docker Hub Description
-        if: github.event_name != 'release'
-        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa  # V5.0.0
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ env.DOCKERHUB_IMAGE }}
-          short-description: ${{ github.event.repository.description }}
 

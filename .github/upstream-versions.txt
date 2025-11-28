@@ -1,0 +1,5 @@
+# Upstream dependency versions
+# Format: owner/repo sha tag check_type
+# Updated: 2025-11-28 07:37:44 UTC
+
+Lanrenbang/envwarp 7218ff0c994988f91c48e512bf1e4ca03e823e3d v0.2.2 release

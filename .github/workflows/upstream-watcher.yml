@@ -14,7 +14,7 @@ jobs:
 
       - name: 'Run upstream checker'
         id: checker
-        uses: Lanrenbang/.github/.github/actions/upstream-checker@1b8eb063f482c0ee8ec30fe81a65bd5cd2cbf76e  # v1.4.0
+        uses: Lanrenbang/.github/.github/actions/upstream-checker@98067310fd58ed6ba0a05bb926f97de1658c0c86  # v1.5.0
         with:
           repositories: |
             [

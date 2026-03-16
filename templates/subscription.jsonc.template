@@ -1,6 +1,6 @@
 /*
 * ---- API 桥接服务订阅端点配置 ----
-* 你必须安装 `xray-services` 项目并且配置好其环境变量才可，因为本配置借用其变量
+* 你必须安装 `xray-services` 项目并且配置好其环境变量才可，因为本配置依赖其变量
 * 当然你可以根据 `xray-services` 项目的变量注释将借用部分单独移入本项目环境变量配置；
 * 但是你依旧需要定义 Xray gRPC API 开放地址才能使用各个 RESTful 端点，也就是脱离 Xray 本项目是没有意义的。
 
@@ -17,10 +17,10 @@
     "security": "reality",                                    // 必须，加密协议，tls/reality；
     "description": "",                                        // 可选，订阅描述文本，不提供默认生成为 `protocol_network_security`；
     "encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_RAW}",     // 可选，留空则为 none(vless)/auto(vmess)，否则可为 vless 加密密钥/vmess 加密算法；
-    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",            // 可选，客户端指纹，默认 chrome
+    "fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",            // 可选，客户端指纹，默认 chrome
     "serverName": "",                                         // 可选，服务端 SNI，reality `偷别人` 的域名，空则取 address（必须为域名）
     "flow": "xtls-rprx-vision",                               // 可选，留空则以服务端定义为准
-    "password": "${XARY_REALITY_PASSWORD}",                   // security=reality 时必须，否则忽略
+    "password": "${XRAY_REALITY_PASSWORD}",                   // security=reality 时必须，否则忽略
     "mldsa65Verify": "",                                      // security=reality 时可选启用 REALITY ML-DSA-65 签名，否则忽略
     "alpn": ["h2", "http/1.1"],                               // security=tls 时可选，否则忽略
     "echConfigList": "",                                      // security=tls 时可选，否则忽略
@@ -38,8 +38,8 @@
 		"network": "xhttp",
 		"security": "reality",
 		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
-		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
-		"password": "${XARY_REALITY_PASSWORD}",
+		"fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
+		"password": "${XRAY_REALITY_PASSWORD}",
 		"host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}"
 	},
 	
@@ -51,7 +51,7 @@
 		"network": "xhttp",
 		"security": "tls",
 		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
-		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
 		"alpn": ["h2"],
 		"host": "${XRAY_OUTBOUND_ADDRESS_CDN}"
 	},
@@ -64,7 +64,7 @@
 		"network": "xhttp",
 		"security": "tls",
 		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
-		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+		"fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
 		"alpn": ["h2"],
 		"host": "${XRAY_OUTBOUND_ADDRESS_CDN}",
 		"extra": {
@@ -74,9 +74,9 @@
 			  "network": "xhttp",
 			  "security": "reality",
 			  "realitySettings": {
-			    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+			    "fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
 			    "serverName": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
-			    "password": "${XARY_REALITY_PASSWORD}"
+			    "password": "${XRAY_REALITY_PASSWORD}"
 			  },
 			  "xhttpSettings": {
 			    "host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
@@ -101,8 +101,8 @@
 		"network": "xhttp",
 		"security": "reality",
 		"encryption": "${XRAY_INBOUND_VLESS_ENCRYPTION_XHTTP}",
-		"fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
-		"password": "${XARY_REALITY_PASSWORD}",
+		"fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
+		"password": "${XRAY_REALITY_PASSWORD}",
 		"host": "${XRAY_OUTBOUND_ADDRESS_XHTTP}",
 		"extra": {
 		  "downloadSettings": {
@@ -111,7 +111,7 @@
 			  "network": "xhttp",
 			  "security": "tls",
 			  "tlsSettings": {
-			    "fingerprint": "${XARY_OUTBOUND_FINGERPRINT}",
+			    "fingerprint": "${XRAY_OUTBOUND_FINGERPRINT}",
 			    "serverName": "${XRAY_OUTBOUND_ADDRESS_CDN}",
 			    "alpn": [
 				  "h2"

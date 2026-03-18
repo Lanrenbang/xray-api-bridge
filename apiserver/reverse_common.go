@@ -151,8 +151,8 @@ func ReverseTLSSettings(t *tls.Config) *conf.TLSConfig {
 		})
 	}
 	return &conf.TLSConfig{
-		ServerName:      t.ServerName,
-		Insecure:        t.AllowInsecure,
+		ServerName:        t.ServerName,
+		AllowInsecure:     t.AllowInsecure,
 		DisableSystemRoot: t.DisableSystemRoot,
 		Certs:             certs,
 	}

@@ -13,6 +13,22 @@ import (
 	proto "google.golang.org/protobuf/proto"
 )
 
+// parseRoutingRule parses a single routing rule JSON into a *router.RoutingRule.
+// This replaces the previously exported conf.ParseRule which became unexported in newer xray-core.
+func parseRoutingRule(rawRule json.RawMessage) (*router.RoutingRule, error) {
+	routerConfig := &conf.RouterConfig{
+		RuleList: []json.RawMessage{rawRule},
+	}
+	builtConfig, err := routerConfig.Build()
+	if err != nil {
+		return nil, err
+	}
+	if len(builtConfig.Rule) == 0 {
+		return nil, fmt.Errorf("no rule was parsed from the input")
+	}
+	return builtConfig.Rule[0], nil
+}
+
 // handleAddRoutingRule handles the POST /routing/rule API request.
 func (s *APIServer) handleAddRoutingRule() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +38,7 @@ func (s *APIServer) handleAddRoutingRule() http.HandlerFunc {
 			return
 		}
 
-		rule, err := conf.ParseRule(rawRule)
+		rule, err := parseRoutingRule(rawRule)
 		if err != nil {
 			RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to parse routing rule: %v", err))
 			return
@@ -217,7 +233,7 @@ func (s *APIServer) handleBlockIP() http.HandlerFunc {
 
 
 
-		rule, err := conf.ParseRule(rawRule)
+		rule, err := parseRoutingRule(rawRule)
 
 		if err != nil {
 

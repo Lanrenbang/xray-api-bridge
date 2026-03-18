@@ -1,5 +1,6 @@
 # xray-api-bridge
-[English](README.md) | [Simplified Chinese](README-cn.md)
+
+[English](README.md) | [简体中文](README-cn.md)
 
 This project provides a complete RESTful HTTP API interface for the Xray-core instance's gRPC management API.
 It acts as a bridge, converting HTTP requests into gRPC calls, allowing services like Caddy to interact with Xray without needing a native gRPC client.

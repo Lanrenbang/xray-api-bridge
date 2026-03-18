@@ -3,12 +3,12 @@
 # - 理论上本项目不适合脱离 xray 独立运行，除非是分布式部署，此时应该单独将用到 xray 变量集成到 .env.warp 或独立文件
 
 services:
-  xray:
+  xray-api:
     network_mode: !reset null
     depends_on: !reset null  # 如果使用 podman-compose，则需要 v1.5.0+
 
     volumes: !override
-      - ./templates/server:/usr/local/etc/templates:ro # 订阅配置模板
+      - ./templates:/usr/local/etc/templates:ro # 订阅配置模板
 
       - ./.env.warp:/usr/local/etc/.env.warp:ro
       # 必须解决用到的 xray 模板变量

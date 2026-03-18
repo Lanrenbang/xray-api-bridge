@@ -1,5 +1,7 @@
 # Upstream dependency versions
-# Format: owner/repo sha tag check_type
-# Updated: 2025-11-28 07:37:44 UTC
+# Format: key sha tag check_type
+# Updated: 2026-03-18 23:21:05 UTC
 
-Lanrenbang/envwarp 7218ff0c994988f91c48e512bf1e4ca03e823e3d v0.2.2 release
+Lanrenbang/envwarp ab37396bbf452ba0dbefa196f37811b9940afc7e v0.3.0 release
+XTLS/Xray-core 12ee51e4bb1d02ece4ef4b7114efa2bcdc130995 v26.2.6 release
+go-chi/chi 05f1ef7bb50b8a8cb33a9dd3ba1c5b94bff0f723 v5.2.5 release

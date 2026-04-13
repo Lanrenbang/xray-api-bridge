@@ -54,6 +54,9 @@ func main() {
 	// subsConfigPath can be empty if subscription endpoint is not used.
 	// The handler for that endpoint should check if the path is configured.
 
+	subsSecret := os.Getenv("XRAY_API_BRIDGE_SUBS_AUTHSECRET")
+	subsURL := os.Getenv("XRAY_API_BRIDGE_SUBS_URL")
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -68,7 +71,7 @@ func main() {
 	fmt.Println("Successfully connected to Xray gRPC server.")
 
 	// Initialize Chi router and API server
-	apiServer := apiserver.NewAPIServer(xrayClient, listenAddr, subsConfigPath)
+	apiServer := apiserver.NewAPIServer(xrayClient, listenAddr, subsConfigPath, subsSecret, subsURL)
 
 	// Start the HTTP server in a goroutine
 	go func() {

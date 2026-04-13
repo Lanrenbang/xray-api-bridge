@@ -24,10 +24,14 @@
     "mldsa65Verify": "",                                      // security=reality 时可选启用 REALITY ML-DSA-65 签名，否则忽略
     "alpn": ["h2", "http/1.1"],                               // security=tls 时可选，否则忽略
     "echConfigList": "",                                      // security=tls 时可选，否则忽略
-    "host": "${XRAY_OUTBOUND_ADDRESS_RAW}",                   // network=http|xhttp|ws|httpupgrade 时可选，空则取 address，否则忽略
+    "pinnedPeerCertSha256": "",                               // security=tls 时可选，否则忽略，指定远程服务器的证书 SHA256 散列值
+    "verifyPeerCertByName": "",                               // security=tls 时可选，否则忽略，用于校验证书使用的 SNI，可以用 , 分割多个域名
+    "host": "${XRAY_OUTBOUND_ADDRESS_RAW}",                   // network=http|xhttp|ws|httpupgrade 时可选，空则取 address；也作为 grpc 的 authority 字段
     "mode": "auto",                                           // network=xhttp|grpc 时可选，留空则为 auto(xhttp)/gun(grpc)，否则忽略
     "extra": {},                                              // network=xhttp 可选，否则忽略
-    "path": ""                                                // network=http|ws|httpupgrade 时可选，指定请求路径，xhttp 时自动从服务端获取，否则忽略
+    "path": "",                                               // network=http|ws|httpupgrade 时可选，指定请求路径，xhttp 时自动从服务端获取，其他 network 空值则忽略；也作为 grpc 的 serviceName 字段
+    "finalmask": {},                                          // 可选，传输层加密后对流量进行最后一层伪装，目前仅有 UDP 支持
+
   },
 
 	{

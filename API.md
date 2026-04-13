@@ -20,32 +20,53 @@
             "message": "Xray API Bridge is running!"
         }
         ```
-*   **GET /subscription**
-    *   **描述:** 根据提供的用户 UUID 生成订阅链接。
+*   **GET /generateSubLinks**
+    *   **描述:** 校验用户 UUID 并生成加密的订阅 URL。此端点作为 `/subscription` 的入口，将 UUID 加密为 token 嵌入返回的 URL 中。
+    *   **环境变量依赖:**
+        *   `XRAY_API_BRIDGE_SUBS_AUTHSECRET` (必须): Token 加密密钥。
+        *   `XRAY_API_BRIDGE_SUBS_URL` (必须): 订阅服务的基础 URL。
+        *   `XRAY_API_BRIDGE_SUBS_SUPERKEY` (可选): 超级密钥，用于获取所有用户的订阅。
     *   **查询参数:**
-        *   `uuid` (必须): 一个或多个用户的 ID，以逗号分隔。如果提供的值与 `XRAY_API_BRIDGE_SUBS_SUPERKEY` 环境变量匹配，则返回所有用户的链接。
+        *   `uuid` (必须): 一个或多个用户的 ID，以逗号分隔。如果提供的值与 `XRAY_API_BRIDGE_SUBS_SUPERKEY` 环境变量匹配，则返回包含所有用户链接的订阅 URL。
     *   **`curl` 示例:** 
         ```bash
-        # 获取单个用户的订阅链接
-        curl -L "http://localhost:8081/subscription?uuid=c6a5b2a0-5a5a-4a5a-a5a5-a5a5a5a5a5a5"
+        # 获取单个用户的订阅 URL
+        curl "http://localhost:8081/generateSubLinks?uuid=c6a5b2a0-5a5a-4a5a-a5a5-a5a5a5a5a5a5"
 
-        # 获取多个用户的订阅链接
-        curl -L "http://localhost:8081/subscription?uuid=user-id-1,user-id-2"
+        # 获取多个用户的订阅 URL
+        curl "http://localhost:8081/generateSubLinks?uuid=user-id-1,user-id-2"
 
         # 使用超级密钥获取所有链接
-        curl -L "http://localhost:8081/subscription?uuid=YOUR_SUPER_KEY"
+        curl "http://localhost:8081/generateSubLinks?uuid=YOUR_SUPER_KEY"
         ```
     *   **响应 (成功):** 
         ```json
         {
             "success": true,
-            "data": [
-                "vless://...#vless_raw_reality",
-                "vless://...#vless_xhttp_reality",
-                "vless://...#vless_xhttp_tls"
-            ]
+            "data": "https://your-domain.com/subscription?token=kX9vR2mN8pQ1wZ5t..."
         }
         ```
+    *   **响应 (错误 - UUID 无效):** 
+        ```json
+        {
+            "success": false,
+            "error": "The provided uuid does not match any active inbound client."
+        }
+        ```
+*   **GET /subscription**
+    *   **描述:** 根据加密 token 中携带的用户 UUID 生成订阅链接。返回 Base64 编码的通用 URI 格式订阅内容（多条链接以换行符分隔）。
+    *   **查询参数:**
+        *   `token` (必须): 由 `/generateSubLinks` 端点生成的加密 token，内含用户 UUID 信息。
+    *   **`curl` 示例:** 
+        ```bash
+        # 直接使用 /generateSubLinks 返回的完整 URL
+        curl "https://your-domain.com/subscription?token=kX9vR2mN8pQ1wZ5t..."
+        ```
+    *   **响应 (成功):** 
+        ```
+        dmxlc3M6Ly91dWlkQGFkZHJlc3M6cG9ydD9zZWN1cml0eT1yZWFsaXR5...
+        ```
+        > 响应为 `text/plain` 格式的 Base64 编码文本。解码后为多行 vless/vmess URI。
 </details>
 <details>
 <summary>StatsService (统计服务)</summary>

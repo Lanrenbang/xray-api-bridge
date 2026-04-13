@@ -19,6 +19,7 @@ It acts as a bridge, converting HTTP requests into gRPC calls, allowing services
 .
 ├── apiserver
 ├── bridge
+├── tokenauth
 ├── xrayapi                           # Source code above
 ├── templates
 │   └── subscription.jsonc.template   # Subscription configuration template

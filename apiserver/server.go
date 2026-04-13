@@ -17,13 +17,15 @@ type APIServer struct {
 	httpServer    *http.Server
 	xrayClient    *xrayapi.Client
 	subsConfigPath string
+	subsSecret     string
+	subsURL        string
 
 	// Store current listen address for reloading, though reload logic might need rework
 	currentListenAddr string
 }
 
 // NewAPIServer creates a new APIServer instance.
-func NewAPIServer(xrayClient *xrayapi.Client, listenAddr, subsConfigPath string) *APIServer {
+func NewAPIServer(xrayClient *xrayapi.Client, listenAddr, subsConfigPath, subsSecret, subsURL string) *APIServer {
 	r := chi.NewRouter()
 
 	// A good base middleware stack
@@ -47,6 +49,8 @@ func NewAPIServer(xrayClient *xrayapi.Client, listenAddr, subsConfigPath string)
 			IdleTimeout:  120 * time.Second,
 		},
 		subsConfigPath:    subsConfigPath,
+		subsSecret:        subsSecret,
+		subsURL:           subsURL,
 		currentListenAddr: listenAddr,
 	}
 

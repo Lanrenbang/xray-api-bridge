@@ -8,6 +8,7 @@ import (
 func (s *APIServer) RegisterHandlers(r *chi.Mux) {
 	r.Get("/status", s.HandleStatus)
 	r.Get("/subscription", s.HandleSubscription)
+	r.Get("/generateSubLinks", s.HandleGenerateSubLinks)
 
 
 	// StatsService

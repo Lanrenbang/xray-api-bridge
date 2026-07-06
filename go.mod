@@ -3,7 +3,7 @@ module xray-api-bridge
 go 1.26
 
 require (
-	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/chi/v5 v5.3.1
 	github.com/xtls/xray-core v1.260327.0
 	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
